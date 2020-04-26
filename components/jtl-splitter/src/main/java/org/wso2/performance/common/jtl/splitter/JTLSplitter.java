@@ -134,6 +134,8 @@ public final class JTLSplitter {
             // Support JMeter 5.0
             final int maximumColumns = 17;
 
+            long moreColumnLineCount = 0;
+            long lessColumnLineCount = 0;
             lineLoop:
             while ((line = br.readLine()) != null) {
                 lineNumber++;
@@ -146,7 +148,7 @@ public final class JTLSplitter {
                         pos = end + 1;
                     } else {
                         // Validate number of columns
-                        errorOutput.format("WARNING: Line %d has more columns than expected: %s%n", lineNumber, line);
+                        moreColumnLineCount ++;
                         continue lineLoop;
                     }
                 }
@@ -157,7 +159,7 @@ public final class JTLSplitter {
                 }
                 if (i < minimumColumns) {
                     // Validate number of columns
-                    errorOutput.format("WARNING: Line %d has less columns than expected: %s%n", lineNumber, line);
+                    lessColumnLineCount ++;
                     continue;
                 }
                 long timestamp;
@@ -204,6 +206,16 @@ public final class JTLSplitter {
                     }
                 }
             }
+            // Print warnings
+            if (lessColumnLineCount > 0) {
+                errorOutput.format("WARNING: There were %d lines with less columns than expected and were skipped.",
+                        lessColumnLineCount);
+            }
+            if (moreColumnLineCount > 0) {
+                errorOutput.format("WARNING: There were %d lines with more columns than expected and were skipped.",
+                        moreColumnLineCount);
+            }
+
             // Delete only if splitting is successful
             if (deleteJTLFileOnExit) {
                 jtlFile.deleteOnExit();
